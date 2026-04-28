@@ -54,60 +54,12 @@ EchoBlog/
         └── page-profile.js # 个人中心
 ```
 
-## API 接口
+## 📄 项目文档
 
-### 公开接口（无需登录）
+详细的技术方案和 API 接口说明请查阅 docs 目录：
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/api/user/register` | 用户注册 |
-| POST | `/api/user/login` | 用户登录 |
-| GET | `/api/posts` | 文章列表（支持分页） |
-| GET | `/api/posts/:id` | 文章详情 |
-| GET | `/api/categories` | 分类列表 |
-
-### 认证接口（需登录）
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/user/me` | 获取当前用户信息 |
-| PUT | `/api/user/profile` | 更新个人资料 |
-| POST | `/api/posts` | 发布文章 |
-| PUT | `/api/posts/:id` | 编辑文章 |
-| DELETE | `/api/posts/:id` | 删除文章 |
-| GET | `/api/my/posts` | 我的文章列表 |
-
-### 请求 / 响应示例
-
-**注册**
-```json
-POST /api/user/register
-{
-  "username": "alice",
-  "email":    "alice@example.com",
-  "password": "password123"
-}
-```
-
-**登录**
-```json
-POST /api/user/login
-{ "username": "alice", "password": "password123" }
-
-// 响应
-{ "code": 0, "token": "eyJhbGci..." }
-```
-
-**发布文章**
-```json
-POST /api/posts
-Authorization: Bearer <token>
-{
-  "title":    "我的第一篇文章",
-  "content":  "这里是正文内容...",
-  "category": 1
-}
-```
+- 📘 [技术方案文档](./docs/技术方案文档.md)
+- 📗 [API 接口文档](./docs/API接口文档.md)
 
 ## 本地运行
 
