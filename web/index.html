@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoBlog — 分享你的声音</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✍️</text></svg>" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+
+<!-- ====== Toast Container ====== -->
+<div id="toast-container"></div>
+
+<!-- ====== Navbar ====== -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="navigate('home')">
+      <div class="nav-logo-icon">✍️</div>
+      EchoBlog
+    </div>
+
+    <div class="nav-links">
+      <button class="nav-btn" data-page="home" onclick="navigate('home')">🏠 首页</button>
+      <button class="nav-btn" data-page="my-posts" onclick="requireAuth('my-posts')" id="btn-my-posts-nav">📝 我的文章</button>
+      <!-- Auth button (logged out) -->
+      <button class="nav-btn solid" id="nav-auth-btn" onclick="navigate('auth')">登录 / 注册</button>
+      <!-- User area (logged in) -->
+      <div id="nav-user-area" class="hidden" style="display:flex;align-items:center;gap:.6rem">
+        <div class="nav-avatar" id="nav-avatar" onclick="requireAuth('profile')" title="个人中心"></div>
+        <span id="nav-username" style="font-size:.875rem;font-weight:600;color:var(--text2);cursor:pointer" onclick="requireAuth('profile')"></span>
+        <button class="nav-btn btn-ghost btn-sm" onclick="doLogout()" title="退出">退出</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     PAGE: HOME
+     ============================================================ -->
+<div class="page" id="page-home">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-content">
+      <h1>✍️ EchoBlog</h1>
+      <p>分享你的声音，记录每一个灵感瞬间</p>
+      <div class="hero-search">
+        <input id="search-input" type="text" placeholder="搜索文章标题…" onkeydown="if(event.key==='Enter')doSearch()" />
+        <button onclick="doSearch()">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="home-layout">
+      <!-- Main -->
+      <main>
+        <div class="cat-chips" id="cat-chips">
+          <div class="cat-chip active" data-id="0">全部</div>
+        </div>
+        <div class="posts-grid" id="posts-grid"></div>
+        <div class="pagination" id="pagination"></div>
+      </main>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-card-header"><span class="icon">📂</span> 文章分类</div>
+          <div class="sidebar-card-body">
+            <div id="sidebar-cat-list">
+              <div class="sidebar-cat-item active" data-id="0"><span>📝 全部文章</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-card" id="sidebar-stats">
+          <div class="sidebar-card-header"><span class="icon">📊</span> 博客统计</div>
+          <div>
+            <div class="stat-row">
+              <span class="stat-label">文章总数</span>
+              <span class="stat-value" id="stat-total">—</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">分类数</span>
+              <span class="stat-value" id="stat-cats">—</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: POST DETAIL
+     ============================================================ -->
+<div class="page" id="page-post">
+  <div class="container">
+    <div class="post-detail-wrap">
+      <button class="back-btn" onclick="navigate('home')">← 返回列表</button>
+      <div id="post-detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: AUTH
+     ============================================================ -->
+<div class="page" id="page-auth">
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">✍️</div>
+        <h2>EchoBlog</h2>
+        <p>分享你的声音</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="auth-tab-login"    onclick="PageAuth.switchTab('login')">登录</button>
+        <button class="auth-tab"        id="auth-tab-reg"      onclick="PageAuth.switchTab('register')">注册</button>
+      </div>
+
+      <!-- Login -->
+      <div id="form-login">
+        <div class="form-group">
+          <label class="form-label">用户名</label>
+          <input class="form-control" id="login-username" type="text" placeholder="请输入用户名"
+                 onkeydown="if(event.key==='Enter')PageAuth.doLogin()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码</label>
+          <input class="form-control" id="login-password" type="password" placeholder="请输入密码"
+                 onkeydown="if(event.key==='Enter')PageAuth.doLogin()" />
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-login" onclick="PageAuth.doLogin()">登 录</button>
+        <p style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--muted)">
+          没有账号？<a href="#" style="color:var(--primary);font-weight:600" onclick="PageAuth.switchTab('register')">立即注册</a>
+        </p>
+      </div>
+
+      <!-- Register -->
+      <div id="form-register" class="hidden">
+        <div class="form-group">
+          <label class="form-label">用户名</label>
+          <input class="form-control" id="reg-username" type="text" placeholder="3~20 个字符，唯一" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">邮箱</label>
+          <input class="form-control" id="reg-email" type="email" placeholder="请输入有效邮箱" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码</label>
+          <input class="form-control" id="reg-password" type="password" placeholder="至少 6 位" />
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-register" onclick="PageAuth.doRegister()">注 册</button>
+        <p style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--muted)">
+          已有账号？<a href="#" style="color:var(--primary);font-weight:600" onclick="PageAuth.switchTab('login')">去登录</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: MY POSTS
+     ============================================================ -->
+<div class="page" id="page-my-posts">
+  <div class="container">
+    <div class="my-posts-header">
+      <div>
+        <div class="page-title">我的文章</div>
+        <div class="page-subtitle">管理你发布的所有博文</div>
+      </div>
+      <button class="btn btn-primary" onclick="PostModal.openNew()">+ 发布文章</button>
+    </div>
+    <div id="my-posts-list"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: PROFILE
+     ============================================================ -->
+<div class="page" id="page-profile">
+  <div class="container">
+    <div class="profile-layout">
+      <div class="profile-card">
+        <!-- Cover -->
+        <div class="profile-cover" onclick="PageProfile.uploadCover()" title="点击更换封面">
+          <img id="profile-cover-img" src="" alt="cover" class="profile-cover-img" style="display:none">
+          <div class="profile-cover-upload">
+            <span>📷</span>
+            <span>点击更换封面</span>
+          </div>
+        </div>
+        <!-- Info -->
+        <div class="profile-info-wrap">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="profile-avatar" onclick="PageProfile.uploadAvatar()" title="点击更换头像">
+              <div class="profile-avatar-text">U</div>
+            </div>
+            <div class="avatar-upload-hint">📷</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem;justify-content:flex-start">
+            <div id="profile-name" class="profile-name">—</div>
+            <button class="btn btn-ghost btn-sm" onclick="PageProfile.openNicknameEditor()" title="修改昵称" style="padding:.15rem .4rem;font-size:.8rem;opacity:.5;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.5'">✏️</button>
+          </div>
+          <div id="profile-original-name" class="profile-uid" style="display:none;font-size:.78rem;color:var(--muted)"></div>
+          <div id="profile-uid"  class="profile-uid">UID: —</div>
+
+          <!-- Bio -->
+          <div class="profile-bio" id="profile-bio-area">
+            <span class="profile-bio-empty" id="profile-bio-text" onclick="PageProfile.openEditProfileModal()">还没有个人简介，点击添加...</span>
+          </div>
+
+          <!-- Location -->
+          <div class="profile-location" id="profile-location" style="display:none">
+            <span>📍</span>
+            <span id="profile-location-text"></span>
+          </div>
+
+          <!-- Social Links -->
+          <div class="profile-socials" id="profile-socials"></div>
+
+          <!-- Join badge -->
+          <div class="profile-join-badge" id="profile-join-badge" style="display:none">
+            <span>🚀</span>
+            <span id="profile-join-text"></span>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn btn-primary" onclick="PageProfile.openEditProfileModal()">✏️ 编辑资料</button>
+            <button class="btn btn-outline" onclick="PageProfile.uploadAvatar()">📷 头像</button>
+            <button class="btn btn-outline" onclick="PageProfile.uploadCover()">🖼️ 封面</button>
+            <button class="btn btn-danger"  onclick="doLogout()">退出</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Sidebar -->
+      <div class="profile-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-card-header"><span class="icon">⚡</span> 快捷操作</div>
+          <div class="sidebar-card-body" style="padding:1rem">
+            <div style="display:flex;flex-direction:column;gap:.65rem">
+              <button class="btn btn-primary" onclick="PostModal.openNew();navigate('my-posts')" style="justify-content:flex-start">✍️ 写新文章</button>
+              <button class="btn btn-outline" onclick="navigate('my-posts')" style="justify-content:flex-start">📋 我的文章列表</button>
+              <button class="btn btn-outline" onclick="navigate('home')" style="justify-content:flex-start">🏠 返回首页</button>
+            </div>
+          </div>
+        </div>
+        <div class="sidebar-card" id="profile-stats-card">
+          <div class="sidebar-card-header"><span class="icon">📊</span> 我的统计</div>
+          <div>
+            <div class="stat-row">
+              <span class="stat-label">文章数</span>
+              <span class="stat-value" id="profile-stat-posts">—</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">总浏览</span>
+              <span class="stat-value" id="profile-stat-views">—</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">分类数</span>
+              <span class="stat-value" id="profile-stat-cats">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Post Editor
+     ============================================================ -->
+<div class="modal-overlay" id="post-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">✍️ 发布文章</h2>
+      <button class="modal-close" onclick="PostModal.close()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Cover image upload -->
+      <div class="form-group">
+        <label class="form-label">封面图 <span style="font-weight:400;color:var(--muted)">(可选，存储在本地)</span></label>
+        <div class="cover-upload-area" id="cover-upload-area" onclick="PostModal.pickCover()">
+          <span class="cover-upload-icon">🖼️</span>
+          <span class="cover-upload-text">点击上传封面图</span>
+          <span class="cover-upload-hint">JPG / PNG，建议 16:9，最大 2MB</span>
+        </div>
+        <div style="margin-top:.4rem;display:flex;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" onclick="PostModal.removeCover()" style="font-size:.78rem;color:var(--danger)">✕ 移除封面</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">标题 *</label>
+        <input class="form-control" id="post-title" type="text" placeholder="一个好的标题能吸引更多读者…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">分类</label>
+        <select class="form-control" id="post-category">
+          <option value="0">无分类</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">内容 *</label>
+        <textarea class="form-control" id="post-content" placeholder="在这里写下你的想法…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="PostModal.close()">取消</button>
+      <button class="btn btn-primary" id="btn-submit-post" onclick="PostModal.submit()">发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Confirm Delete
+     ============================================================ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2>⚠️ 确认删除</h2>
+      <button class="modal-close" onclick="ConfirmModal.close()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--muted);line-height:1.7">
+        此操作将<strong style="color:var(--danger)">永久删除</strong>该文章，无法恢复。<br>
+        确认要删除吗？
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="ConfirmModal.close()">取消</button>
+      <button class="btn btn-danger"  id="btn-confirm-del" onclick="ConfirmModal.confirm()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Edit Profile
+     ============================================================ -->
+<div class="modal-overlay" id="profile-edit-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h2>✏️ 编辑个人资料</h2>
+      <button class="modal-close" onclick="ProfileEditModal.close()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-edit-group">
+        <label>用户名 <span style="font-weight:400;color:var(--muted);font-size:.82rem">（不可修改）</span></label>
+        <input class="form-control" id="edit-username-display" type="text" disabled style="background:var(--bg2);color:var(--muted);cursor:not-allowed">
+      </div>
+      <div class="profile-edit-group">
+        <label>昵称</label>
+        <input class="form-control" id="edit-nickname" type="text" placeholder="显示昵称（留空则用用户名）" maxlength="20">
+      </div>
+      <div class="profile-edit-group">
+        <label>个人简介</label>
+        <textarea class="form-control" id="edit-bio" placeholder="介绍一下自己吧…" maxlength="200" style="min-height:100px"></textarea>
+      </div>
+      <div class="profile-edit-group">
+        <label>所在地</label>
+        <input class="form-control" id="edit-location" type="text" placeholder="例如：北京、上海、广州" maxlength="30">
+      </div>
+      <div class="profile-edit-group">
+        <label>社交链接</label>
+        <div class="profile-edit-row">
+          <input class="form-control" id="edit-social-github" type="text" placeholder="GitHub 链接">
+          <input class="form-control" id="edit-social-twitter" type="text" placeholder="Twitter / X 链接">
+        </div>
+        <div class="profile-edit-row" style="margin-top:.5rem">
+          <input class="form-control" id="edit-social-website" type="text" placeholder="个人网站">
+          <input class="form-control" id="edit-social-wechat" type="text" placeholder="微信号">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="ProfileEditModal.close()">取消</button>
+      <button class="btn btn-primary" onclick="ProfileEditModal.save()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Footer ====== -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo-icon" style="width:28px;height:28px;font-size:.8rem;border-radius:7px">✍️</div>
+      EchoBlog
+    </div>
+    <div class="footer-links">
+      <a href="#" onclick="navigate('home');return false">首页</a>
+      <a href="#" onclick="requireAuth('my-posts');return false">我的文章</a>
+      <a href="#" onclick="requireAuth('profile');return false">个人中心</a>
+      <a href="#" onclick="navigate('auth');return false">登录</a>
+    </div>
+    <p class="footer-copy">© 2026 EchoBlog · 用文字记录生活 ✍️</p>
+  </div>
+</footer>
+
+<!-- ====== Scripts ====== -->
+<script src="./js/api.js"></script>
+<script src="./js/utils.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/page-home.js"></script>
+<script src="./js/page-post.js"></script>
+<script src="./js/page-auth.js"></script>
+<script src="./js/page-my-posts.js"></script>
+<script src="./js/page-profile.js"></script>
+
+<script>
+/* ---- Close modals on overlay click ---- */
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      overlay.classList.remove('open');
+      if (overlay.id === 'post-modal')         { PostModal.close(); }
+      if (overlay.id === 'confirm-modal')      { ConfirmModal.close(); }
+      if (overlay.id === 'profile-edit-modal') { ProfileEditModal.close(); }
+    }
+  });
+});
+
+/* ---- ESC key closes modals ---- */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+/* ---- Search ---- */
+function doSearch() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  if (!q) { PageHome.init(); return; }
+  navigate('home');
+  // 前端简单过滤（首页已加载的数据）
+  const cards = document.querySelectorAll('.post-card');
+  let shown = 0;
+  cards.forEach(c => {
+    const title = c.querySelector('.post-card-title')?.textContent.toLowerCase() || '';
+    const visible = title.includes(q);
+    c.style.display = visible ? '' : 'none';
+    if (visible) shown++;
+  });
+  if (shown === 0) {
+    document.getElementById('posts-grid').innerHTML =
+      emptyHTML('🔍', '没有找到相关文章', `未搜索到包含 "${q}" 的文章`);
+  }
+}
+
+/* ---- Bootstrap ---- */
+bootstrap();
+</script>
+</body>
+</html>

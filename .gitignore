@@ -1,0 +1,30 @@
+# 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 配置（包含密码）
+config/config.yaml
+
+# 日志
+*.log
+logs/
+
+# 上传文件（本地存储的封面/头像）
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
